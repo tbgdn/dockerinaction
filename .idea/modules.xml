@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/Docker in Action.iml" filepath="$PROJECT_DIR$/.idea/Docker in Action.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/dockerinaction.iml" filepath="$PROJECT_DIR$/.idea/dockerinaction.iml" />
     </modules>
   </component>
 </project>
