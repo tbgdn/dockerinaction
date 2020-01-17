@@ -4,8 +4,11 @@ from time import sleep
 def printCommandId(command, id):
     print('{0} with id: {1}'.format(command, id))
 
+def dockerCreate(args):
+    return docker(['create', '--label', 'dockerinaction'] + args)
+
 def dockerRun(args):
-    return docker(['run'] + args)
+    return docker(['run', '--label', 'dockerinaction'] + args)
 
 def dockerStart(args):
     return docker(['start'] + args)
@@ -29,28 +32,31 @@ def runCommand(args):
 
 def removeAllContainers():
     print('Cleaning up Docker...')
-    containerIds = docker(['ps', '-a', '-q'])
+    containerIds = docker(['ps', '-a', '--filter', 'label=dockerinaction', '-q'])
     for id in containerIds.split('\n'):
         printCommandId('stopping', id)
         id = docker(['stop', id])
-        printCommandId('removing', id)
+        logs = docker(['logs', id])
+        print('Logging for {0}\n{1}'.format(id, logs))
+        printCommandId('---\nremoving', id)
         id = docker(['rm', id])
         printCommandId('removed', id)
+        print('===')
 
 def runChapter():
     mailerCid = dockerRun(['-d', 'dockerinaction/ch2_mailer'])
-    print('running %s' % mailerCid)
-    webCid = docker(['create', 'nginx'])
-    printCommandId('created', webCid)
-    agentCid = docker(['create', '--link', '%s:insideweb' % webCid, '--link', '%s:insidemailer' % mailerCid, 'dockerinaction/ch2_agent'])
-    print('created %s' % agentCid)
+    printCommandId('running mailer', mailerCid)
+    webCid = dockerCreate(['nginx'])
+    printCommandId('created web', webCid)
+    agentCid = dockerCreate([ '--link', '%s:insideweb' % webCid, '--link', '%s:insidemailer' % mailerCid, 'dockerinaction/ch2_agent'])
+    printCommandId('created agent', agentCid)
     webRid = dockerStart([webCid])
+    printCommandId('running web', webRid)
     agentRid = dockerStart([agentCid])
-    printCommandId('running', webRid)
-    print('running %s' % agentRid)
+    printCommandId('running agent', agentRid)
 
 try:
-    timeout = 10
+    timeout = 1
     runChapter()
     print('Running for {0}s'.format(timeout))
     sleep(timeout)
