@@ -1,66 +1,29 @@
 import subprocess
 from time import sleep
+from docker import Docker
 
-def printCommandId(command, id):
-    print('{0} with id: {1}'.format(command, id))
 
-def dockerCreate(args):
-    return docker(['create', '--label', 'dockerinaction'] + args)
+def runChapter(d):
+    mailer_cid = d.docker_run(['-d', 'dockerinaction/ch2_mailer'])
+    Docker.print_command_id('running mailer', mailer_cid)
+    webCid = d.docker_create(['nginx'])
+    d.print_command_id('created web', webCid)
+    agent_cid = d.docker_create(
+        ['--link', '%s:insideweb' % webCid, '--link', '%s:insidemailer' % mailer_cid, 'dockerinaction/ch2_agent'])
+    d.print_command_id('created agent', agent_cid)
+    webRid = d.docker_start([webCid])
+    d.print_command_id('running web', webRid)
+    agentRid = d.docker_start([agent_cid])
+    d.print_command_id('running agent', agentRid)
 
-def dockerRun(args):
-    return docker(['run', '--label', 'dockerinaction'] + args)
 
-def dockerStart(args):
-    return docker(['start'] + args)
-
-def docker(args):
-    return runCommand(['docker'] + args)
-
-def runCommand(args):
-    result = subprocess.run(
-        args,
-        capture_output=True,
-        shell=True,
-        encoding='utf-8')
-    if (result.returncode):
-        print(result.stderr)
-        print(result.stdout)
-        result.check_returncode()
-
-    res = result.stdout
-    return res.strip().strip("\"")
-
-def removeAllContainers():
-    print('Cleaning up Docker...')
-    containerIds = docker(['ps', '-a', '--filter', 'label=dockerinaction', '-q'])
-    for id in containerIds.split('\n'):
-        printCommandId('stopping', id)
-        id = docker(['stop', id])
-        logs = docker(['logs', id])
-        print('Logging for {0}\n{1}'.format(id, logs))
-        printCommandId('---\nremoving', id)
-        id = docker(['rm', id])
-        printCommandId('removed', id)
-        print('===')
-
-def runChapter():
-    mailerCid = dockerRun(['-d', 'dockerinaction/ch2_mailer'])
-    printCommandId('running mailer', mailerCid)
-    webCid = dockerCreate(['nginx'])
-    printCommandId('created web', webCid)
-    agentCid = dockerCreate([ '--link', '%s:insideweb' % webCid, '--link', '%s:insidemailer' % mailerCid, 'dockerinaction/ch2_agent'])
-    printCommandId('created agent', agentCid)
-    webRid = dockerStart([webCid])
-    printCommandId('running web', webRid)
-    agentRid = dockerStart([agentCid])
-    printCommandId('running agent', agentRid)
-
+docker = Docker('dockerinaction')
 try:
     timeout = 1
-    runChapter()
+    runChapter(docker)
     print('Running for {0}s'.format(timeout))
     sleep(timeout)
-    removeAllContainers()
+    docker.cleanup()
 except subprocess.CalledProcessError as err:
     print('Some error was thrown while executing docker command:\n{0}'.format(err))
-    removeAllContainers()
+    docker.cleanup()
