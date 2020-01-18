@@ -1,7 +1,7 @@
 import subprocess
 
 
-class Docker(object):
+class Docker:
     def __init__(self, label='docker'):
         self.label = label
 
@@ -9,19 +9,20 @@ class Docker(object):
     def print_command_id(command, id):
         print('{0} with id: {1}'.format(command, id))
 
-    def docker_create(self, args):
+    def create(self, args):
         return self.docker(['create', '--label', self.label] + args)
 
     def docker_run(self, args):
         return self.docker(['run', '--label', self.label] + args)
 
-    def docker_start(self, args):
-        return self.docker(['start'] + args)
+    def start(self, id):
+        return self.docker(['start', id])
 
     def docker(self, args):
         return self.run_command(['docker'] + args)
 
     def run_command(self, args):
+        print('[Docker] {0}'.format(' '.join(args)))
         result = subprocess.run(
             args,
             capture_output=True,
@@ -36,14 +37,11 @@ class Docker(object):
         return res.strip().strip("\"")
 
     def cleanup(self):
-        print('Cleaning up Docker...')
+        print('[Docker] Cleaning up...')
         containerIds = self.docker(['ps', '-a', '--filter', 'label=' + self.label, '-q'])
         for id in containerIds.split('\n'):
-            self.print_command_id('stopping', id)
             id = self.docker(['stop', id])
             logs = self.docker(['logs', id])
-            print('Logging for {0}\n{1}'.format(id, logs))
-            self.print_command_id('---\nremoving', id)
+            print('[Docker] Logging for {0}\n{1}'.format(id, logs))
             id = self.docker(['rm', id])
-            self.print_command_id('removed', id)
             print('===')

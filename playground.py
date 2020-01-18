@@ -2,4 +2,4 @@
 
 args = ['1', '2', '3']
 
-print(args[1:])
+print(' '.join(args[1:]))
