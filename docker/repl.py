@@ -2,8 +2,8 @@ import cmd, sys
 
 
 class Repl(cmd.Cmd):
-    intro = 'Wordpress commander'
-    prompt = '[wp]'
+    intro = 'Docker commander'
+    prompt = '>'
 
     def __init__(self, docker):
         super().__init__()

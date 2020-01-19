@@ -12,7 +12,7 @@ class Docker:
     def create(self, args):
         return self.docker(['create', '--label', self.label] + args)
 
-    def docker_run(self, args):
+    def run(self, args):
         return self.docker(['run', '--label', self.label] + args)
 
     def start(self, id):

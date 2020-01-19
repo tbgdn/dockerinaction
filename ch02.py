@@ -4,7 +4,7 @@ from docker import Docker
 
 
 def runChapter(d):
-    mailer_cid = d.docker_run(['-d', 'dockerinaction/ch2_mailer'])
+    mailer_cid = d.run(['-d', 'dockerinaction/ch2_mailer'])
     Docker.print_command_id('running mailer', mailer_cid)
     webCid = d.create(['nginx'])
     d.print_command_id('created web', webCid)
