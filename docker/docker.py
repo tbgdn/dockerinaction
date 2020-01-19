@@ -18,6 +18,12 @@ class Docker:
     def start(self, id):
         return self.docker(['start', id])
 
+    def volumeCreate(self, args):
+        return self.docker(['volume', 'create'] + args)
+
+    def volumeInspect(self, args):
+        return self.docker(['volume', 'inspect'] + args)
+
     def docker(self, args):
         return self.run_command(['docker'] + args)
 
@@ -45,3 +51,4 @@ class Docker:
             print('[Docker] Logging for {0}\n{1}'.format(id, logs))
             id = self.docker(['rm', id])
             print('===')
+        self.docker(['volume', 'prune', '-f'])
