@@ -1,4 +1,5 @@
 FROM debian:stretch
+ARG VERSION=uknown
 LABEL maintainer="dia@allingeek.com"
 RUN groupadd -r -g 2200 example && \
     useradd -rM -g example -u 2200 example

@@ -9,6 +9,9 @@ class Docker:
     def print_command_id(command, id):
         print('{0} with id: {1}'.format(command, id))
 
+    def imageBuild(self, args):
+        return self.docker(['image', 'build'] + args)
+
     def create(self, args):
         return self.docker(['create', '--label', self.label] + args)
 
